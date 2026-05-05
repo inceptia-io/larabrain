@@ -17,15 +17,15 @@ Give your Laravel application self-awareness. LaraBrain scans your codebase (mod
 
 ## Installation
 
-Install via Composer:
+### 1 — Install via Composer
 
 ```bash
 composer require inceptia-io/larabrain
 ```
 
-Laravel auto-discovers the service provider. No manual registration is needed.
+Laravel will auto-discover the service provider via the `extra.laravel` key in `composer.json`. No manual provider registration is required for Laravel 10+.
 
-Publish the config file:
+### 2 — Publish the config file
 
 ```bash
 php artisan vendor:publish --tag=brain-config
@@ -33,30 +33,93 @@ php artisan vendor:publish --tag=brain-config
 
 This places `config/app-brain.php` in your application's `config/` directory.
 
+### 3 — (Optional) Publish migrations
+
+```bash
+php artisan vendor:publish --tag=brain-migrations
+php artisan migrate
+```
+
+### 4 — Configure environment variables
+
+Add the variables below to your `.env` file. Only `BRAIN_AI_DRIVER` and its corresponding API key are required.
+
 ---
 
 ## Environment Variables
 
-Add the following to your `.env` file. Only the AI driver key is required to get started.
+All environment variables are optional unless marked **required**. The package reads from `.env` and falls back to `config/app-brain.php`.
+
+### AI Provider Configuration
+
+| Variable | Default | Description |
+|---|---|---|
+| `BRAIN_AI_DRIVER` | `openai` | **Required.** AI provider: `openai`, `gemini`, `anthropic`, or `deepseek` |
+| `OPENAI_API_KEY` | — | OpenAI API key (e.g. `sk-...`). Required if `BRAIN_AI_DRIVER=openai` |
+| `GEMINI_API_KEY` | — | Google Gemini API key. Required if `BRAIN_AI_DRIVER=gemini` |
+| `ANTHROPIC_API_KEY` | — | Anthropic API key. Required if `BRAIN_AI_DRIVER=anthropic` |
+| `DEEPSEEK_API_KEY` | — | DeepSeek API key. Required if `BRAIN_AI_DRIVER=deepseek` |
+
+### Provider-Specific Settings
+
+| Variable | Default | Description |
+|---|---|---|
+| `BRAIN_OPENAI_MODEL` | `gpt-4o` | OpenAI model to use (e.g. `gpt-4-turbo`, `gpt-4`) |
+| `BRAIN_OPENAI_MAX_TOKENS` | `2048` | Maximum tokens for OpenAI responses |
+| `BRAIN_OPENAI_TIMEOUT` | `60` | Request timeout in seconds for OpenAI |
+| `BRAIN_GEMINI_MODEL` | `gemini-1.5-pro` | Google Gemini model to use |
+| `BRAIN_GEMINI_MAX_TOKENS` | `2048` | Maximum tokens for Gemini responses |
+| `BRAIN_ANTHROPIC_MODEL` | `claude-3-5-sonnet-20241022` | Anthropic model to use |
+| `BRAIN_ANTHROPIC_MAX_TOKENS` | `2048` | Maximum tokens for Anthropic responses |
+| `BRAIN_DEEPSEEK_MODEL` | `deepseek-chat` | DeepSeek model to use |
+| `BRAIN_DEEPSEEK_MAX_TOKENS` | `2048` | Maximum tokens for DeepSeek responses |
+
+### Caching
+
+| Variable | Default | Description |
+|---|---|---|
+| `BRAIN_CACHE_ENABLED` | `true` | Enable/disable the cache layer entirely |
+| `BRAIN_ASK_CACHE_CONTEXT` | `false` | Cache context results per keyword to avoid re-scanning |
+| `BRAIN_CACHE_CONTEXT_TTL` | `3600` | TTL in seconds for cached context results |
+| `BRAIN_CACHE_PREFIX` | `brain` | Cache key prefix to avoid conflicts |
+
+### Logging
+
+| Variable | Default | Description |
+|---|---|---|
+| `BRAIN_ASK_LOG_QUERIES` | `false` | Log every `ask()` call at DEBUG level with metadata |
+| `BRAIN_LOG_CHANNEL` | `null` | Log channel (uses app default if null) |
+
+### Web Interface
+
+| Variable | Default | Description |
+|---|---|---|
+| `BRAIN_UI_ENABLED` | `true` | Enable/disable the web chat interface |
+| `BRAIN_UI_PREFIX` | `brain` | URL prefix for chat page (e.g. `/brain`) |
+
+### Example `.env`
 
 ```env
-# Which AI provider to use (openai, gemini, anthropic, deepseek)
+# Required
 BRAIN_AI_DRIVER=openai
+OPENAI_API_KEY=sk-your-key-here
 
-# API keys — only set the one for your chosen driver
-OPENAI_API_KEY=sk-...
-GEMINI_API_KEY=...
-ANTHROPIC_API_KEY=...
-DEEPSEEK_API_KEY=...
+# Optional: customize model behavior
+BRAIN_OPENAI_MODEL=gpt-4o
+BRAIN_OPENAI_MAX_TOKENS=4096
 
-# Optional: cache context lookups to avoid repeated filesystem scans
+# Optional: enable context caching
 BRAIN_CACHE_ENABLED=true
-BRAIN_ASK_CACHE_CONTEXT=false
-BRAIN_CACHE_CONTEXT_TTL=3600
+BRAIN_ASK_CACHE_CONTEXT=true
+BRAIN_CACHE_CONTEXT_TTL=7200
 
-# Optional: log every ask() call at DEBUG level
-BRAIN_ASK_LOG_QUERIES=false
-BRAIN_LOG_CHANNEL=null
+# Optional: enable logging
+BRAIN_ASK_LOG_QUERIES=true
+BRAIN_LOG_CHANNEL=single
+
+# Optional: web interface
+BRAIN_UI_ENABLED=true
+BRAIN_UI_PREFIX=brain
 ```
 
 ---
@@ -328,51 +391,6 @@ composer analyse
 ## License
 
 MIT
-
-
----
-
-## Requirements
-
-| Dependency | Version |
-|---|---|
-| PHP | ^8.1 |
-| Laravel | ^10.0 \| ^11.0 \| ^12.0 |
-
----
-
-## Installation
-
-### 1 — Install via Composer
-
-```bash
-composer require inceptia-io/larabrain
-```
-
-Laravel will auto-discover the service provider via the `extra.laravel` key in
-`composer.json`. No manual provider registration is required for Laravel 10+.
-
-### 2 — Publish the config file
-
-```bash
-php artisan vendor:publish --tag=brain-config
-```
-
-This places `config/app-brain.php` in your application's `config/` directory.
-
-### 3 — (Optional) Publish migrations
-
-```bash
-php artisan vendor:publish --tag=brain-migrations
-php artisan migrate
-```
-
-### 4 — (Optional) Configure environment variables
-
-Add any of the following to your `.env` file:
-
-```env
-BRAIN_ENABLED=true
 BRAIN_CACHE_ENABLED=true
 BRAIN_CACHE_TTL=3600
 BRAIN_CACHE_PREFIX=brain
