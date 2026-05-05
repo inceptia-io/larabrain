@@ -1,13 +1,17 @@
-# laravel-brain
+# LaraBrain
 
-A Laravel package that gives your application self-awareness. It scans your codebase (models, migrations, routes, controllers), builds a structured context graph, and uses an AI provider to answer natural-language questions about how your application works.
+Give your Laravel application self-awareness. LaraBrain scans your codebase (models, migrations, routes, controllers), builds a structured context graph, and uses an AI provider to answer natural-language questions about how your application works — with clickable links to relevant pages.
+
+[![Latest Version on Packagist](https://img.shields.io/packagist/v/inceptia-io/larabrain.svg)](https://packagist.org/packages/inceptia-io/larabrain)
+[![PHP Version](https://img.shields.io/packagist/php-v/inceptia-io/larabrain.svg)](https://packagist.org/packages/inceptia-io/larabrain)
+[![License](https://img.shields.io/github/license/inceptia-io/larabrain.svg)](LICENSE)
 
 ---
 
 ## Requirements
 
 - PHP 8.1 or higher
-- Laravel 10, 11, or 12
+- Laravel 10, 11, 12, or 13
 
 ---
 
@@ -16,7 +20,7 @@ A Laravel package that gives your application self-awareness. It scans your code
 Install via Composer:
 
 ```bash
-composer require arafat/laravel-brain
+composer require inceptia-io/larabrain
 ```
 
 Laravel auto-discovers the service provider. No manual registration is needed.
@@ -281,7 +285,7 @@ MIT
 ### 1 — Install via Composer
 
 ```bash
-composer require arafat/laravel-brain
+composer require inceptia-io/larabrain
 ```
 
 Laravel will auto-discover the service provider via the `extra.laravel` key in

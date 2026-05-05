@@ -1,19 +1,35 @@
 {
-    "name": "arafat/laravel-brain",
-    "description": "A production-ready Laravel package scaffold — laravel-brain.",
+    "name": "inceptia-io/larabrain",
+    "description": "Give your Laravel application self-awareness. Scans models, routes, controllers and migrations, builds a context graph, and answers natural-language questions about your codebase via OpenAI, Gemini, Anthropic or DeepSeek.",
     "type": "library",
     "license": "MIT",
+    "homepage": "https://github.com/inceptia-io/larabrain",
     "authors": [
         {
             "name": "Arafat Hossain",
-            "email": "hello@arafat.dev"
+            "email": "hello@arafat.dev",
+            "homepage": "https://arafat.dev",
+            "role": "Developer"
         }
     ],
     "keywords": [
         "laravel",
-        "laravel-brain",
-        "package"
+        "ai",
+        "codebase",
+        "assistant",
+        "openai",
+        "gemini",
+        "anthropic",
+        "deepseek",
+        "context",
+        "natural-language",
+        "laravel-package",
+        "brain"
     ],
+    "support": {
+        "issues": "https://github.com/inceptia-io/larabrain/issues",
+        "source": "https://github.com/inceptia-io/larabrain"
+    },
     "require": {
         "php": "^8.1",
         "illuminate/support": "^10.0|^11.0|^12.0|^13.0"
