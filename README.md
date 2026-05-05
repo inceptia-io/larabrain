@@ -104,6 +104,64 @@ php artisan app-brain:ask "What routes does the user have?" --json
 
 ---
 
+## Web Interface
+
+LaraBrain includes a built-in web UI for asking questions directly from your browser. Access is controlled by middleware (protected by `auth` by default).
+
+### Standalone Chat Page
+
+Visit the chat interface at your configured URL:
+
+```
+https://your-app.test/brain
+```
+
+This is a full-page chat application with:
+- Clean dark theme
+- Markdown rendering for AI responses
+- Clickable links to relevant routes in your application
+- Request metadata (intent, driver, elapsed time)
+
+**Access control:** Protected by `auth` middleware by default. Configure in `config/app-brain.php`:
+
+```php
+'ui' => [
+    'enabled'    => true,
+    'prefix'     => 'brain',              // URL prefix
+    'middleware' => ['web', 'auth'],      // Remove 'auth' to make public
+],
+```
+
+To make it public:
+
+```php
+'middleware' => ['web'],
+```
+
+### Floating Widget
+
+Drop the widget anywhere in your admin layout for quick access without leaving the page:
+
+```blade
+<!-- In your master layout (e.g. resources/views/layouts/app.blade.php) -->
+@include('brain::widget')
+```
+
+The widget appears as a fixed button in the bottom-right corner. Click to open a chat panel with the same features as the standalone page.
+
+**Example:** Add to your admin panel footer:
+
+```blade
+<footer>
+    <p>&copy; {{ date('Y') }} Your App</p>
+    @include('brain::widget')
+</footer>
+```
+
+The widget respects the same middleware configuration as the chat page.
+
+---
+
 ## Using the Facade
 
 ```php
@@ -234,6 +292,9 @@ The full config file at `config/app-brain.php` includes these top-level keys:
 | `scan.exclude` | vendor, node_modules, storage, etc. | Paths excluded from file scanning |
 | `scan.scanners` | all enabled | Per-scanner enable/disable flags |
 | `ai.default` | `openai` | Active AI driver |
+| `ui.enabled` | `true` | Enable/disable the web chat interface |
+| `ui.prefix` | `brain` | URL prefix for chat page (e.g. `/brain`) |
+| `ui.middleware` | `['web', 'auth']` | Middleware stack for UI routes (remove `auth` to make public) |
 
 ---
 
