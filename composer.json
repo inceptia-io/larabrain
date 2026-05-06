@@ -1,6 +1,6 @@
 {
     "name": "inceptia-io/larabrain",
-    "description": "Give your PHP application self-awareness. Scans models, routes, controllers and migrations, builds a context graph, and answers natural-language questions about your codebase via OpenAI, Gemini, Anthropic or DeepSeek. Supports Laravel and CodeIgniter 4.",
+    "description": "Give your CodeIgniter 4 application self-awareness. Scans entities, builds a context graph, and answers natural-language questions about your codebase via OpenAI, Gemini, Anthropic or DeepSeek.",
     "type": "library",
     "license": "MIT",
     "homepage": "https://github.com/inceptia-io/larabrain",
@@ -13,7 +13,6 @@
         }
     ],
     "keywords": [
-        "laravel",
         "codeigniter",
         "codeigniter4",
         "ai",
@@ -25,7 +24,6 @@
         "deepseek",
         "context",
         "natural-language",
-        "laravel-package",
         "brain"
     ],
     "support": {
@@ -34,19 +32,11 @@
     },
     "require": {
         "php": "^8.1",
+        "codeigniter4/framework": "^4.4",
         "guzzlehttp/guzzle": "^7.0"
     },
-    "suggest": {
-        "illuminate/support": "Required for Laravel integration (^10.0|^11.0|^12.0|^13.0)",
-        "codeigniter4/framework": "Required for CodeIgniter 4 integration (^4.4)"
-    },
     "require-dev": {
-        "illuminate/support": "^10.0|^11.0|^12.0|^13.0",
-        "larastan/larastan": "^2.0|^3.0",
-        "laravel/pint": "^1.0",
-        "orchestra/testbench": "^8.0|^9.0",
         "pestphp/pest": "^2.0",
-        "pestphp/pest-plugin-laravel": "^2.0",
         "phpstan/phpstan": "^1.0|^2.0"
     },
     "autoload": {
@@ -59,25 +49,10 @@
             "Arafat\\Brain\\Tests\\": "tests/"
         }
     },
-    "extra": {
-        "laravel": {
-            "providers": [
-                "Arafat\\Brain\\BrainServiceProvider"
-            ],
-            "aliases": {
-                "Brain": "Arafat\\Brain\\Facades\\Brain",
-                "AppBrain": "Arafat\\Brain\\Facades\\AppBrain"
-            }
-        }
-    },
     "scripts": {
         "test": "vendor/bin/pest",
-        "test:coverage": "vendor/bin/pest --coverage",
         "analyse": "vendor/bin/phpstan analyse --memory-limit=512M",
-        "format": "vendor/bin/pint",
-        "format:check": "vendor/bin/pint --test",
         "quality": [
-            "@format:check",
             "@analyse"
         ]
     },
