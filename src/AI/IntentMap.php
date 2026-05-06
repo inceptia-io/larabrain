@@ -90,7 +90,7 @@ final class IntentMap
     /**
      * Merge additional keywords into an Intent's pattern list at runtime.
      *
-     * Intended for application-level customisation in a ServiceProvider:
+    * Intended for application-level customisation during bootstrap:
      *
      *   IntentMap::extend(Intent::ExplainWorkflow, ['saga', 'saga pattern']);
      *

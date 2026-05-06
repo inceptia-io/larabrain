@@ -8,7 +8,7 @@ namespace Arafat\Brain\CI4\Context;
  * CIContextResult
  *
  * Immutable value object returned by CIContextBuilder::build().
- * Uses plain PHP arrays instead of Illuminate\Support\Collection.
+ * Uses plain PHP arrays for lightweight, framework-neutral data handling.
  */
 final class CIContextResult
 {

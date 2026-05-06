@@ -12,8 +12,8 @@ use GuzzleHttp\Exception\GuzzleException;
  * AbstractCIProvider
  *
  * Guzzle-based base class for all CodeIgniter 4 AI providers.
- * Mirrors AbstractAIProvider but replaces Illuminate\Http\Client\Http
- * with GuzzleHttp\Client so there are no Laravel dependencies.
+ * Uses GuzzleHttp\Client directly so runtime has no framework-coupled
+ * HTTP client dependency.
  *
  * Subclass obligations
  * ────────────────────

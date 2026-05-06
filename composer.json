@@ -35,32 +35,14 @@
         "codeigniter4/framework": "^4.4",
         "guzzlehttp/guzzle": "^7.0"
     },
-    "require-dev": {
-        "pestphp/pest": "^2.0",
-        "phpstan/phpstan": "^1.0|^2.0"
-    },
     "autoload": {
         "psr-4": {
             "Arafat\\Brain\\": "src/"
         }
     },
-    "autoload-dev": {
-        "psr-4": {
-            "Arafat\\Brain\\Tests\\": "tests/"
-        }
-    },
-    "scripts": {
-        "test": "vendor/bin/pest",
-        "analyse": "vendor/bin/phpstan analyse --memory-limit=512M",
-        "quality": [
-            "@analyse"
-        ]
-    },
+    "scripts": {},
     "config": {
-        "sort-packages": true,
-        "allow-plugins": {
-            "pestphp/pest-plugin": true
-        }
+        "sort-packages": true
     },
     "minimum-stability": "stable",
     "prefer-stable": true
