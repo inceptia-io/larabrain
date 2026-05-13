@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Arafat\Brain\CI4\AI\Providers;
+namespace Arafat\Brain\CI3\AI\Providers;
 
-use Arafat\Brain\CI4\AI\AbstractCIProvider;
+use Arafat\Brain\CI3\AI\AbstractCIProvider;
 use Arafat\Brain\Exceptions\AIException;
 
 final class GeminiProvider extends AbstractCIProvider
@@ -21,7 +21,7 @@ final class GeminiProvider extends AbstractCIProvider
 
     protected function apiUrl(): string
     {
-        $model = $this->model();
+        $model  = $this->model();
         $apiKey = $this->apiKey();
 
         return "https://generativelanguage.googleapis.com/v1beta/models/{$model}:generateContent?key={$apiKey}";

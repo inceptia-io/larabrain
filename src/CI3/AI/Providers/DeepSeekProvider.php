@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Arafat\Brain\CI4\AI\Providers;
+namespace Arafat\Brain\CI3\AI\Providers;
 
-use Arafat\Brain\CI4\AI\AbstractCIProvider;
+use Arafat\Brain\CI3\AI\AbstractCIProvider;
 use Arafat\Brain\Exceptions\AIException;
 
 final class DeepSeekProvider extends AbstractCIProvider
@@ -28,7 +28,7 @@ final class DeepSeekProvider extends AbstractCIProvider
 
     protected function authHeader(): array
     {
-        return ['Authorization' => "Bearer {$this->apiKey()}"];
+        return ['Authorization' => 'Bearer ' . $this->apiKey()];
     }
 
     protected function buildPayload(string $prompt): array

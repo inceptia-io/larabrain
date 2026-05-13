@@ -1,3 +1,16 @@
+<?php
+/**
+ * Brain Chat Page — CodeIgniter 3
+ *
+ * Loaded via BrainController::chat() or included directly:
+ *
+ *   include FCPATH . 'vendor/inceptia-io/larabrain/resources/ci3-views/brain/chat.php';
+ */
+$CI       = &get_instance();
+$CI->load->helper('url');
+$_csrfName  = $CI->security->get_csrf_token_name();
+$_csrfHash  = $CI->security->get_csrf_hash();
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -199,8 +212,8 @@
     const questionEl  = document.getElementById('question-field');
     const sendBtn     = document.getElementById('send-btn');
     const askEndpoint = '<?= site_url('brain/ask') ?>';
-    const csrfToken   = '<?= csrf_token() ?>';
-    const csrfValue   = '<?= csrf_hash() ?>';
+    const csrfToken   = '<?= htmlspecialchars($_csrfName, ENT_QUOTES, 'UTF-8') ?>';
+    const csrfValue   = '<?= htmlspecialchars($_csrfHash, ENT_QUOTES, 'UTF-8') ?>';
 
     let isBusy = false;
 

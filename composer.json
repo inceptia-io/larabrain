@@ -1,6 +1,6 @@
 {
     "name": "inceptia-io/larabrain",
-    "description": "Give your CodeIgniter 4 application self-awareness. Scans entities, builds a context graph, and answers natural-language questions about your codebase via OpenAI, Gemini, Anthropic or DeepSeek.",
+    "description": "Give your CodeIgniter 3 application self-awareness. Scans entities, builds a context graph, and answers natural-language questions about your codebase via OpenAI, Gemini, Anthropic or DeepSeek.",
     "type": "library",
     "license": "MIT",
     "homepage": "https://github.com/inceptia-io/larabrain",
@@ -14,7 +14,8 @@
     ],
     "keywords": [
         "codeigniter",
-        "codeigniter4",
+        "codeigniter3",
+        "ci3",
         "ai",
         "codebase",
         "assistant",
@@ -31,9 +32,11 @@
         "source": "https://github.com/inceptia-io/larabrain"
     },
     "require": {
-        "php": "^8.1",
-        "codeigniter4/framework": "^4.4",
+        "php": "^7.4|^8.0",
         "guzzlehttp/guzzle": "^7.0"
+    },
+    "suggest": {
+        "codeigniter/framework": "^3.1 — Required for BrainController and BrainServices (CI3 app framework)"
     },
     "autoload": {
         "psr-4": {

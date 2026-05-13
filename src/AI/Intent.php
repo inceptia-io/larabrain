@@ -7,53 +7,65 @@ namespace Arafat\Brain\AI;
 /**
  * Intent
  *
- * The detected intent of a user query, resolved by AppBrainService
- * before the prompt is assembled.  The intent is stored on the
- * AppBrainResponse so callers can inspect how the query was classified.
+ * Represents the detected intent of a user query.
+ * Implemented as a value class (PHP 7.4+ compatible — no enum required).
  */
-enum Intent: string
+class Intent
 {
-    /**
-     * "How does X work?" / "Explain the X flow" / "Walk me through X".
-     * The AI is asked to narrate the end-to-end workflow.
-     */
-    case ExplainWorkflow = 'explain_workflow';
+    const EXPLAIN_WORKFLOW  = 'explain_workflow';
+    const SHOW_ROUTES       = 'show_routes';
+    const DESCRIBE_MODEL    = 'describe_model';
+    const LIST_DEPENDENCIES = 'list_dependencies';
+    const GENERAL           = 'general';
 
-    /**
-     * "What routes does X have?" / "List endpoints for X" / "Show routes".
-     * Focus is on HTTP surface — routes and controller entry-points.
-     */
-    case ShowRoutes = 'show_routes';
+    /** @var string */
+    public $value;
 
-    /**
-     * "Describe the X model" / "What fields does X have?" / "X schema".
-     * Focus is on the Eloquent model and its backing table.
-     */
-    case DescribeModel = 'describe_model';
+    private function __construct(string $value)
+    {
+        $this->value = $value;
+    }
 
-    /**
-     * "What are the dependencies of X?" / "What calls X?" / "What uses X?".
-     * Focus is on identifying relationships and coupling.
-     */
-    case ListDependencies = 'list_dependencies';
+    // ── Named constructors (mimic enum cases) ─────────────────────────────────
 
-    /**
-     * Catch-all for queries that don't match a more specific intent.
-     * The full structured prompt is still generated and sent to the AI.
-     */
-    case General = 'general';
+    public static function ExplainWorkflow(): self  { return new self(self::EXPLAIN_WORKFLOW); }
+    public static function ShowRoutes(): self        { return new self(self::SHOW_ROUTES); }
+    public static function DescribeModel(): self     { return new self(self::DESCRIBE_MODEL); }
+    public static function ListDependencies(): self  { return new self(self::LIST_DEPENDENCIES); }
+    public static function General(): self           { return new self(self::GENERAL); }
+
+    // ── Factory ───────────────────────────────────────────────────────────────
+
+    public static function from(string $value): self
+    {
+        $valid = [
+            self::EXPLAIN_WORKFLOW,
+            self::SHOW_ROUTES,
+            self::DESCRIBE_MODEL,
+            self::LIST_DEPENDENCIES,
+            self::GENERAL,
+        ];
+
+        if (!in_array($value, $valid, true)) {
+            throw new \InvalidArgumentException("'{$value}' is not a valid Intent value.");
+        }
+
+        return new self($value);
+    }
 
     // ── Helpers ───────────────────────────────────────────────────────────────
 
     /** Human-readable label for logging / debugging. */
     public function label(): string
     {
-        return match ($this) {
-            self::ExplainWorkflow => 'Explain Workflow',
-            self::ShowRoutes => 'Show Routes',
-            self::DescribeModel => 'Describe Model',
-            self::ListDependencies => 'List Dependencies',
-            self::General => 'General',
-        };
+        $map = [
+            self::EXPLAIN_WORKFLOW  => 'Explain Workflow',
+            self::SHOW_ROUTES       => 'Show Routes',
+            self::DESCRIBE_MODEL    => 'Describe Model',
+            self::LIST_DEPENDENCIES => 'List Dependencies',
+            self::GENERAL           => 'General',
+        ];
+
+        return $map[$this->value] ?? $this->value;
     }
 }

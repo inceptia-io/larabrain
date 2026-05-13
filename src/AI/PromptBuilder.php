@@ -64,7 +64,7 @@ final class PromptBuilder
         return <<<PROMPT
         # ROLE
 
-        You are an expert assistant for a Laravel web application.
+        You are an expert assistant for a web application.
         You have full access to the application's internal structure (routes, models, controllers,
         database tables) provided in the CONTEXT section below.
 

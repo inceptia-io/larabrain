@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace Arafat\Brain\CI4\AI\Providers;
+namespace Arafat\Brain\CI3\AI\Providers;
 
-use Arafat\Brain\CI4\AI\AbstractCIProvider;
+use Arafat\Brain\CI3\AI\AbstractCIProvider;
 use Arafat\Brain\Exceptions\AIException;
 
 final class AnthropicProvider extends AbstractCIProvider
 {
-    private const API_URL = 'https://api.anthropic.com/v1/messages';
+    private const API_URL     = 'https://api.anthropic.com/v1/messages';
     private const API_VERSION = '2023-06-01';
 
     public function driver(): string

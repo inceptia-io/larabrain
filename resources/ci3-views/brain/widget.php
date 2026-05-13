@@ -1,14 +1,18 @@
 <?php
 /**
- * Brain Floating Widget — CodeIgniter 4
+ * Brain Floating Widget — CodeIgniter 3
  *
- * Include this in your CI4 layout (e.g. the bottom of your master view):
+ * Include this in your CI3 layout (e.g. the bottom of your master view):
  *
- *   <?php include ROOTPATH . 'vendor/inceptia-io/larabrain/resources/ci4-views/brain/widget.php'; ?>
+ *   <?php include FCPATH . 'vendor/inceptia-io/larabrain/resources/ci3-views/brain/widget.php'; ?>
  *
  * Or use the BrainController::widget() method in your routes.
  * The widget injects its own styles and JS — no build step required.
  */
+$CI = &get_instance();
+$CI->load->helper('url');
+$_csrfName = $CI->security->get_csrf_token_name();
+$_csrfHash = $CI->security->get_csrf_hash();
 ?>
 <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 
@@ -131,10 +135,10 @@
     var textarea = document.getElementById('bw-textarea');
     var sendBtn  = document.getElementById('bw-send');
 
-    var busy     = false;
-    var endpoint = '<?= site_url('brain/ask') ?>';
-    var csrfToken = '<?= csrf_token() ?>';
-    var csrfHash  = '<?= csrf_hash() ?>';
+    var busy      = false;
+    var endpoint  = '<?= site_url('brain/ask') ?>';
+    var csrfToken = '<?= htmlspecialchars($_csrfName, ENT_QUOTES, 'UTF-8') ?>';
+    var csrfHash  = '<?= htmlspecialchars($_csrfHash, ENT_QUOTES, 'UTF-8') ?>';
 
     window.brainWidgetToggle = function () {
         panel.classList.toggle('brain-hidden');

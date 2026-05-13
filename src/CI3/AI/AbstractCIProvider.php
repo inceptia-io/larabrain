@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Arafat\Brain\CI4\AI;
+namespace Arafat\Brain\CI3\AI;
 
 use Arafat\Brain\Exceptions\AIException;
 use GuzzleHttp\Client;
@@ -11,8 +11,8 @@ use GuzzleHttp\Exception\GuzzleException;
 /**
  * AbstractCIProvider
  *
- * Guzzle-based base class for all CodeIgniter 4 AI providers.
- * Uses GuzzleHttp\Client directly so runtime has no framework-coupled
+ * Guzzle-based base class for all CodeIgniter 3 AI providers.
+ * Uses GuzzleHttp\Client directly so there is no framework-coupled
  * HTTP client dependency.
  *
  * Subclass obligations
@@ -26,9 +26,9 @@ use GuzzleHttp\Exception\GuzzleException;
 abstract class AbstractCIProvider
 {
     /** @var array<string, mixed> Provider-specific config slice */
-    protected readonly array $config;
+    protected $config;
 
-    /** @param  array<string, mixed>  $fullConfig  The full AppBrain config array */
+    /** @param array<string, mixed> $fullConfig The full AppBrain config array */
     public function __construct(array $fullConfig)
     {
         $this->config = $fullConfig['providers'][$this->driver()] ?? [];
@@ -56,7 +56,7 @@ abstract class AbstractCIProvider
             ]);
         } catch (GuzzleException $e) {
             throw new AIException(
-                "HTTP request failed: {$e->getMessage()}",
+                'HTTP request failed: ' . $e->getMessage(),
                 $this->driver(),
                 0,
                 $e,
@@ -64,7 +64,7 @@ abstract class AbstractCIProvider
         }
 
         $statusCode = $response->getStatusCode();
-        $body = (string) $response->getBody();
+        $body       = (string) $response->getBody();
 
         if ($statusCode >= 400) {
             throw new AIException(
@@ -100,7 +100,7 @@ abstract class AbstractCIProvider
     /**
      * Extract the plain-text answer from the decoded JSON response.
      *
-     * @param  array<string, mixed>  $decoded
+     * @param array<string, mixed> $decoded
      */
     abstract protected function parseResponse(array $decoded, int $statusCode, string $rawBody): string;
 

@@ -2,43 +2,62 @@
 
 declare(strict_types=1);
 
-namespace Arafat\Brain\CI4\Context;
+namespace Arafat\Brain\CI3\Context;
 
 /**
  * CIContextResult
  *
  * Immutable value object returned by CIContextBuilder::build().
  * Uses plain PHP arrays for lightweight, framework-neutral data handling.
+ * PHP 7.4+ compatible (no readonly properties).
  */
 final class CIContextResult
 {
+    /** @var string */
+    public $keyword;
+
+    /** @var array<int, array<string, mixed>> */
+    public $models;
+
+    /** @var array<int, array<string, mixed>> */
+    public $tables;
+
+    /** @var array<int, array<string, mixed>> */
+    public $routes;
+
+    /** @var array<int, array<string, mixed>> */
+    public $controllerMethods;
+
+    /** @var float */
+    public $elapsedMs;
+
     /**
-     * @param  string  $keyword
-     * @param  array<int, array<string, mixed>>  $models
-     * @param  array<int, array<string, mixed>>  $tables
-     * @param  array<int, array<string, mixed>>  $routes
-     * @param  array<int, array<string, mixed>>  $controllerMethods
-     * @param  float  $elapsedMs
+     * @param string $keyword
+     * @param array<int, array<string, mixed>> $models
+     * @param array<int, array<string, mixed>> $tables
+     * @param array<int, array<string, mixed>> $routes
+     * @param array<int, array<string, mixed>> $controllerMethods
+     * @param float $elapsedMs
      */
     public function __construct(
-        public readonly string $keyword,
-        public readonly array $models,
-        public readonly array $tables,
-        public readonly array $routes,
-        public readonly array $controllerMethods,
-        public readonly float $elapsedMs,
-    ) {}
+        string $keyword,
+        array $models,
+        array $tables,
+        array $routes,
+        array $controllerMethods,
+        float $elapsedMs
+    ) {
+        $this->keyword           = $keyword;
+        $this->models            = $models;
+        $this->tables            = $tables;
+        $this->routes            = $routes;
+        $this->controllerMethods = $controllerMethods;
+        $this->elapsedMs         = $elapsedMs;
+    }
 
     public static function empty(string $keyword, float $elapsedMs): self
     {
-        return new self(
-            keyword: $keyword,
-            models: [],
-            tables: [],
-            routes: [],
-            controllerMethods: [],
-            elapsedMs: $elapsedMs,
-        );
+        return new self($keyword, [], [], [], [], $elapsedMs);
     }
 
     // ── Serialisation ──────────────────────────────────────────────────────────
@@ -66,7 +85,10 @@ final class CIContextResult
 
     public function toJson(): string
     {
-        return (string) json_encode($this->toArray(), JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+        return (string) json_encode(
+            $this->toArray(),
+            JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES
+        );
     }
 
     public function isEmpty(): bool

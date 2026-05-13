@@ -20,7 +20,7 @@ namespace Arafat\Brain\AI;
 final class IntentMap
 {
     /** @var array<string, list<string>>  Extra patterns merged at runtime. */
-    private static array $extensions = [];
+    private static $extensions = [];
 
     // ── Static map ─────────────────────────────────────────────────────────────
 
@@ -35,24 +35,24 @@ final class IntentMap
     public static function patterns(): array
     {
         $base = [
-            Intent::ExplainWorkflow->value => [
+            Intent::EXPLAIN_WORKFLOW => [
                 'how does', 'walk me through', 'explain the', 'explain how',
                 'workflow', 'flow', 'step by step', 'step-by-step', 'trace',
                 'process', 'lifecycle', 'pipeline',
             ],
 
-            Intent::ShowRoutes->value => [
+            Intent::SHOW_ROUTES => [
                 'route', 'routes', 'endpoint', 'endpoints', 'url', 'uri',
                 'http', 'api path', 'api endpoint', 'web route', 'api route',
             ],
 
-            Intent::DescribeModel->value => [
+            Intent::DESCRIBE_MODEL => [
                 'model', 'schema', 'fields', 'columns', 'table structure',
                 'eloquent', 'describe', 'attributes', 'fillable', 'casts',
                 'relationships', 'belongs to', 'has many',
             ],
 
-            Intent::ListDependencies->value => [
+            Intent::LIST_DEPENDENCIES => [
                 'depend', 'dependencies', 'uses', 'calls', 'relationship',
                 'relies on', 'imports', 'coupled', 'references', 'connected to',
             ],
@@ -76,13 +76,13 @@ final class IntentMap
     {
         foreach (self::patterns() as $intentValue => $keywords) {
             foreach ($keywords as $kw) {
-                if (str_contains($lowercasedQuestion, $kw)) {
+                if (strpos($lowercasedQuestion, $kw) !== false) {
                     return Intent::from($intentValue);
                 }
             }
         }
 
-        return Intent::General;
+        return Intent::General();
     }
 
     // ── Extension point ────────────────────────────────────────────────────────
@@ -90,9 +90,9 @@ final class IntentMap
     /**
      * Merge additional keywords into an Intent's pattern list at runtime.
      *
-    * Intended for application-level customisation during bootstrap:
+     * Intended for application-level customisation during bootstrap:
      *
-     *   IntentMap::extend(Intent::ExplainWorkflow, ['saga', 'saga pattern']);
+     *   IntentMap::extend(Intent::ExplainWorkflow(), ['saga', 'saga pattern']);
      *
      * @param  list<string>  $keywords  Lowercase substrings to match against.
      */

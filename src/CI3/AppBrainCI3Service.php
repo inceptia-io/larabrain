@@ -2,65 +2,84 @@
 
 declare(strict_types=1);
 
-namespace Arafat\Brain\CI4;
+namespace Arafat\Brain\CI3;
 
 use Arafat\Brain\AI\Intent;
 use Arafat\Brain\AI\IntentMap;
 use Arafat\Brain\AI\PromptBuilder;
-use Arafat\Brain\CI4\AI\AbstractCIProvider;
-use Arafat\Brain\CI4\Config\AppBrain as AppBrainConfig;
-use Arafat\Brain\CI4\Context\CIContextBuilder;
-use Arafat\Brain\CI4\Context\CIContextResult;
+use Arafat\Brain\CI3\AI\AbstractCIProvider;
+use Arafat\Brain\CI3\Config\AppBrain as AppBrainConfig;
+use Arafat\Brain\CI3\Context\CIContextBuilder;
+use Arafat\Brain\CI3\Context\CIContextResult;
 use Arafat\Brain\Exceptions\AIException;
 
 /**
- * AppBrainCI4Service
+ * AppBrainCI3Service
  *
- * CodeIgniter 4 equivalent of AppBrainService.
- * Same pipeline — zero Illuminate dependencies.
+ * CodeIgniter 3 main service that orchestrates the full ask() pipeline.
+ * PHP 7.4+ compatible — no readonly, no match, no enum, no named arguments.
  *
  * Pipeline
  * ────────
  *   1. Extract keyword
  *   2. Detect intent via IntentMap
- *   3. Build context via CIContextBuilder (optional CI4 cache)
+ *   3. Build context via CIContextBuilder (optional CI3 cache)
  *   4. Build prompt via PromptBuilder (shared, framework-agnostic)
  *   5. Call AI provider via AbstractCIProvider (Guzzle)
- *   6. Optional query logging via CI4 log_message()
- *   7. Return CIBrainResponse DTO
+ *   6. Optional query logging via CI3 log_message()
+ *   7. Return result array
  *
  * Usage
  * ─────
- *   $brain   = \Arafat\Brain\CI4\Services\BrainServices::brain();
- *   $result  = $brain->ask('How does the checkout flow work?');
+ *   $brain  = \Arafat\Brain\CI3\Services\BrainServices::brain();
+ *   $result = $brain->ask('How does the checkout flow work?');
  *   echo $result['answer'];
  */
-final class AppBrainCI4Service
+final class AppBrainCI3Service
 {
+    /** @var CIContextBuilder */
+    private $contextBuilder;
+
+    /** @var AbstractCIProvider */
+    private $ai;
+
+    /** @var AppBrainConfig */
+    private $config;
+
+    /** @var string */
+    private $appUrl;
+
     public function __construct(
-        private readonly CIContextBuilder $contextBuilder,
-        private readonly AbstractCIProvider $ai,
-        private readonly AppBrainConfig $config,
-        private readonly string $appUrl = '',
-    ) {}
+        CIContextBuilder $contextBuilder,
+        AbstractCIProvider $ai,
+        AppBrainConfig $config,
+        string $appUrl = ''
+    ) {
+        $this->contextBuilder = $contextBuilder;
+        $this->ai             = $ai;
+        $this->config         = $config;
+        $this->appUrl         = $appUrl;
+    }
 
     // ── Public API ─────────────────────────────────────────────────────────────
 
     /**
-     * @return array{query: string, keyword: string, intent: string, driver: string, answer: string, elapsed_ms: float, context: array<string, mixed>}
+     * @param  string       $question
+     * @param  string|null  $keyword   Override auto-extracted keyword.
+     * @return array{query: string, keyword: string, intent: string, driver: string, answer: string, elapsed_ms: float, context: array}
      * @throws AIException
      */
     public function ask(string $question, ?string $keyword = null): array
     {
-        $start = hrtime(true);
+        $start = microtime(true);
 
-        $keyword  = $keyword ?? $this->extractKeyword($question);
-        $intent   = IntentMap::resolve(strtolower($question));
-        $context  = $this->resolveContext($keyword);
-        $prompt   = $this->buildPrompt($question, $intent, $context);
-        $answer   = $this->ai->ask($prompt);
-        $driver   = $this->ai->driver();
-        $elapsed  = (hrtime(true) - $start) / 1_000_000;
+        $keyword = $keyword !== null ? $keyword : $this->extractKeyword($question);
+        $intent  = IntentMap::resolve(strtolower($question));
+        $context = $this->resolveContext($keyword);
+        $prompt  = $this->buildPrompt($question, $intent, $context);
+        $answer  = $this->ai->ask($prompt);
+        $driver  = $this->ai->driver();
+        $elapsed = (microtime(true) - $start) * 1000;
 
         $response = [
             'query'      => $question,
@@ -77,7 +96,7 @@ final class AppBrainCI4Service
         return $response;
     }
 
-    // ── Context (with optional CI4 cache) ─────────────────────────────────────
+    // ── Context (with optional CI3 cache) ─────────────────────────────────────
 
     private function resolveContext(string $keyword): CIContextResult
     {
@@ -85,18 +104,18 @@ final class AppBrainCI4Service
             return $this->contextBuilder->build($keyword);
         }
 
-        $cache = \Config\Services::cache();
-        $key   = $this->config->cachePrefix . ':context:' . hash('sha256', $keyword);
-        $ttl   = $this->config->cacheContextTtl ?: $this->config->cacheTtl;
+        $CI  = &get_instance();
+        $key = $this->config->cachePrefix . ':context:' . hash('sha256', $keyword);
+        $ttl = $this->config->cacheContextTtl ?: $this->config->cacheTtl;
 
-        $cached = $cache->get($key);
+        $cached = $CI->cache->get($key);
 
         if ($cached instanceof CIContextResult) {
             return $cached;
         }
 
         $result = $this->contextBuilder->build($keyword);
-        $cache->save($key, $result, $ttl);
+        $CI->cache->save($key, $result, $ttl);
 
         return $result;
     }
@@ -121,19 +140,21 @@ final class AppBrainCI4Service
 
     private function intentHint(Intent $intent): string
     {
-        return match ($intent) {
-            Intent::ExplainWorkflow   => 'Focus: explain the end-to-end workflow with step-by-step instructions and links.',
-            Intent::ShowRoutes        => 'Focus: list all relevant HTTP routes/endpoints with their URLs and purposes.',
-            Intent::DescribeModel     => 'Focus: describe the model schema, fields, types, casts, and relationships.',
-            Intent::ListDependencies  => 'Focus: list all dependencies, relationships, and coupling between entities.',
-            Intent::General           => '',
-        };
+        $hints = [
+            Intent::EXPLAIN_WORKFLOW  => 'Focus: explain the end-to-end workflow with step-by-step instructions and links.',
+            Intent::SHOW_ROUTES       => 'Focus: list all relevant HTTP routes/endpoints with their URLs and purposes.',
+            Intent::DESCRIBE_MODEL    => 'Focus: describe the model schema, fields, types, casts, and relationships.',
+            Intent::LIST_DEPENDENCIES => 'Focus: list all dependencies, relationships, and coupling between entities.',
+            Intent::GENERAL           => '',
+        ];
+
+        return $hints[$intent->value] ?? '';
     }
 
     // ── Logging ────────────────────────────────────────────────────────────────
 
     /**
-     * @param  array<string, mixed>  $response
+     * @param array<string, mixed> $response
      */
     private function logQuery(array $response): void
     {
@@ -141,19 +162,14 @@ final class AppBrainCI4Service
             return;
         }
 
-        $summary = $response['context']['summary'] ?? [];
+        $message = 'app-brain: query answered | '
+            . 'query=' . $response['query']
+            . ' keyword=' . $response['keyword']
+            . ' intent=' . $response['intent']
+            . ' driver=' . $response['driver']
+            . ' elapsed_ms=' . round((float) $response['elapsed_ms'], 2);
 
-        log_message(
-            $this->config->logLevel,
-            'app-brain: query answered | query={query} keyword={keyword} intent={intent} driver={driver} elapsed_ms={elapsed}',
-            [
-                'query'   => $response['query'],
-                'keyword' => $response['keyword'],
-                'intent'  => $response['intent'],
-                'driver'  => $response['driver'],
-                'elapsed' => round((float) $response['elapsed_ms'], 2),
-            ],
-        );
+        log_message($this->config->logLevel, $message);
     }
 
     // ── Keyword extraction ─────────────────────────────────────────────────────
@@ -173,14 +189,18 @@ final class AppBrainCI4Service
 
         $candidates = array_filter(
             is_array($words) ? $words : [],
-            static fn (string $w) => $w !== '' && !in_array($w, $stopWords, true),
+            static function (string $w) use ($stopWords): bool {
+                return $w !== '' && !in_array($w, $stopWords, true);
+            }
         );
 
         if (empty($candidates)) {
             return trim($question);
         }
 
-        usort($candidates, static fn ($a, $b) => strlen($b) - strlen($a));
+        usort($candidates, static function ($a, $b): int {
+            return strlen($b) - strlen($a);
+        });
 
         return (string) reset($candidates);
     }

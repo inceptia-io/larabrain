@@ -1,274 +1,329 @@
-# LaraBrain (CodeIgniter 4 Edition)
+# LaraBrain — CodeIgniter 3 Edition
 
-LaraBrain gives your CodeIgniter 4 app self-awareness.
-It builds a context graph from your indexed application entities and uses AI to answer natural-language questions about your codebase.
+**Give your CodeIgniter 3 application self-awareness.**
 
-[![Latest Version on Packagist](https://img.shields.io/packagist/v/inceptia-io/larabrain.svg)](https://packagist.org/packages/inceptia-io/larabrain)
-[![PHP Version](https://img.shields.io/packagist/php-v/inceptia-io/larabrain.svg)](https://packagist.org/packages/inceptia-io/larabrain)
-[![License](https://img.shields.io/github/license/inceptia-io/larabrain.svg)](LICENSE)
+LaraBrain lets you ask natural-language questions about your own codebase and get accurate, grounded answers powered by AI (OpenAI, Gemini, Anthropic, or DeepSeek). It uses a structured context graph stored in your database — no hallucinations, no guessing.
+
+> **Branch:** `codebrain` — CodeIgniter 3 only.  
+> Laravel support lives on the `master` branch.
+
+---
+
+## How It Works
+
+1. You populate two database tables (`app_brain_entities`, `app_brain_relations`) with structured knowledge about your application (routes, models, controllers, tables).
+2. When a question is asked, Brain queries those tables to build a focused context payload.
+3. The context is assembled into a prompt and sent to the configured AI provider.
+4. The AI returns a grounded, Markdown-formatted answer — based only on what it knows from your data.
+
+---
 
 ## Requirements
 
-- PHP 8.1+
-- CodeIgniter 4.4+
-- Composer
+| Requirement | Version |
+|---|---|
+| PHP | 7.4 or 8.x |
+| CodeIgniter | 3.x |
+| Composer autoloading | enabled |
+| Database | MySQL / MariaDB |
+
+---
 
 ## Installation
-
-For the CodeIgniter 4 branch build, install from the `codebrain` branch:
-
-```bash
-composer require inceptia-io/larabrain:dev-codebrain
-```
-
-If Composer blocks dev constraints in your project, use:
 
 ```bash
 composer require inceptia-io/larabrain:"dev-codebrain@dev"
 ```
 
-> Note: `composer require inceptia-io/larabrain` installs the latest stable tag, not the CI branch build.
+### 1. Enable Composer Autoloading in CI3
 
-## Quick Start
-
-### 1) Register package routes
-
-In app/Config/Routes.php:
+In `application/config/config.php`:
 
 ```php
-require ROOTPATH . 'vendor/inceptia-io/larabrain/routes/ci4-brain.php';
+$config['composer_autoload'] = FCPATH . 'vendor/autoload.php';
 ```
 
-Routes added:
-
-- GET /brain
-- POST /brain/ask
-
-### 2) Configure environment
-
-At minimum:
-
-```env
-BRAIN_AI_DRIVER=openai
-OPENAI_API_KEY=sk-...
-```
-
-### 3) Prepare DB tables
-
-The package expects:
-
-- app_brain_entities
-- app_brain_relations
-
-Use the bundled schema file:
-
-- vendor/inceptia-io/larabrain/database/schema/codebrain.sql
-
-Import it with your preferred SQL client, or with CLI:
+### 2. Import the Database Schema
 
 ```bash
 mysql -u your_user -p your_database < vendor/inceptia-io/larabrain/database/schema/codebrain.sql
 ```
 
-### 4) Ask your first question
+This creates two tables:
+- `app_brain_entities` — routes, models, controller methods, database tables
+- `app_brain_relations` — relationships between entities
 
-```php
-use Arafat\Brain\CI4\Services\BrainServices;
+### 3. Set Environment Variables
 
-$result = BrainServices::brain()->ask('How does checkout work?');
-echo $result['answer'];
+Set these in your server config, `.env` file (via a dotenv library), or `putenv()`:
+
+```env
+BRAIN_ENABLED=true
+BRAIN_AI_DRIVER=openai
+
+# OpenAI
+OPENAI_API_KEY=sk-...
+BRAIN_OPENAI_MODEL=gpt-4o
+
+# — OR — Gemini
+GEMINI_API_KEY=...
+BRAIN_AI_DRIVER=gemini
+BRAIN_GEMINI_MODEL=gemini-1.5-pro
+
+# — OR — Anthropic
+ANTHROPIC_API_KEY=...
+BRAIN_AI_DRIVER=anthropic
+BRAIN_ANTHROPIC_MODEL=claude-3-5-sonnet-20241022
+
+# — OR — DeepSeek
+DEEPSEEK_API_KEY=...
+BRAIN_AI_DRIVER=deepseek
+BRAIN_DEEPSEEK_MODEL=deepseek-chat
 ```
 
-## Full Environment Keys
+### 4. Create the Controller Wrapper
 
-All keys are optional unless noted.
-
-### Core
-
-| Key | Default | Required | Notes |
-|---|---|---|---|
-| BRAIN_ENABLED | true | No | Global package switch |
-| BRAIN_AI_DRIVER | openai | Yes | openai, gemini, anthropic, deepseek |
-
-### Provider API Keys
-
-| Key | Required when | Notes |
-|---|---|---|
-| OPENAI_API_KEY | BRAIN_AI_DRIVER=openai | OpenAI secret |
-| GEMINI_API_KEY | BRAIN_AI_DRIVER=gemini | Google Gemini key |
-| ANTHROPIC_API_KEY | BRAIN_AI_DRIVER=anthropic | Anthropic key |
-| DEEPSEEK_API_KEY | BRAIN_AI_DRIVER=deepseek | DeepSeek key |
-
-### OpenAI
-
-| Key | Default |
-|---|---|
-| BRAIN_OPENAI_MODEL | gpt-4o |
-| BRAIN_OPENAI_MAX_TOKENS | 2048 |
-| BRAIN_OPENAI_TIMEOUT | 30 |
-| BRAIN_OPENAI_BASE_URL | https://api.openai.com |
-
-### Gemini
-
-| Key | Default |
-|---|---|
-| BRAIN_GEMINI_MODEL | gemini-1.5-pro |
-| BRAIN_GEMINI_MAX_TOKENS | 2048 |
-
-### Anthropic
-
-| Key | Default |
-|---|---|
-| BRAIN_ANTHROPIC_MODEL | claude-3-5-sonnet-20241022 |
-| BRAIN_ANTHROPIC_MAX_TOKENS | 2048 |
-
-### DeepSeek
-
-| Key | Default |
-|---|---|
-| BRAIN_DEEPSEEK_MODEL | deepseek-chat |
-| BRAIN_DEEPSEEK_MAX_TOKENS | 2048 |
-| BRAIN_DEEPSEEK_BASE_URL | https://api.deepseek.com |
-
-### Cache
-
-| Key | Default | Notes |
-|---|---|---|
-| BRAIN_CACHE_ENABLED | true | Master cache switch |
-| BRAIN_CACHE_TTL | 3600 | Default TTL seconds |
-| BRAIN_CACHE_CONTEXT_TTL | 3600 | Context TTL seconds |
-| BRAIN_CACHE_PREFIX | brain | Cache key namespace |
-| BRAIN_ASK_CACHE_CONTEXT | false | Cache resolved context by keyword |
-
-### Logging
-
-| Key | Default | Notes |
-|---|---|---|
-| BRAIN_ASK_LOG_QUERIES | false | Log each ask() call |
-| BRAIN_LOG_CHANNEL | null | For CI4 this is treated as log level string (e.g. debug) |
-
-## CI4 Config File
-
-Optional: copy this file into your app for centralized config overrides:
-
-- vendor/inceptia-io/larabrain/src/CI4/Config/AppBrain.php
-- to app/Config/AppBrain.php
-
-Main properties in AppBrain config:
-
-| Property | Default |
-|---|---|
-| $enabled | true |
-| $cacheEnabled | true |
-| $cacheTtl | 3600 |
-| $cacheContextTtl | 3600 |
-| $cachePrefix | brain |
-| $logLevel | null |
-| $askCacheContext | false |
-| $askLogQueries | false |
-| $aiDefault | openai |
-| $aiDrivers | openai, gemini, anthropic, deepseek |
-| $providers | per-driver credentials/options |
-| $scanPaths | [] |
-| $scanExclude | vendor, node_modules, writable, public |
-
-## Usage
-
-### Service usage
+Create `application/controllers/Brain.php`:
 
 ```php
-use Arafat\Brain\CI4\Services\BrainServices;
+<?php
+defined('BASEPATH') OR exit('No direct script access allowed');
 
-$brain = BrainServices::brain();
-$result = $brain->ask('Explain product creation flow.');
-
-echo $result['answer'];
+class Brain extends \Arafat\Brain\CI3\Controllers\BrainController {}
 ```
 
-### Response shape
+### 5. Register Routes
+
+In `application/config/routes.php` (at the bottom):
 
 ```php
-[
-  'query' => '...',
-  'keyword' => '...',
-  'intent' => 'explain_workflow|show_routes|describe_model|list_dependencies|general',
-  'driver' => 'openai|gemini|anthropic|deepseek',
-  'answer' => '...markdown...',
-  'elapsed_ms' => 123.45,
-  'context' => [ ... ],
-]
+require FCPATH . 'vendor/inceptia-io/larabrain/routes/ci3-brain.php';
 ```
 
-### Optional Services shortcut
+This registers:
+- `GET  /brain`        → full-page chat UI
+- `POST /brain/ask`    → JSON API
+- `GET  /brain/widget` → floating widget partial
 
-In app/Config/Services.php:
+---
+
+## Quick Start — Ask Programmatically
 
 ```php
-public static function brain(bool $getShared = true): \Arafat\Brain\CI4\AppBrainCI4Service
-{
-    return \Arafat\Brain\CI4\Services\BrainServices::brain($getShared);
-}
+$brain  = \Arafat\Brain\CI3\Services\BrainServices::brain();
+$result = $brain->ask('How does the checkout flow work?');
+
+echo $result['answer'];      // Markdown answer from the AI
+echo $result['intent'];      // Detected intent (explain_workflow, show_routes, …)
+echo $result['driver'];      // AI provider used (openai, gemini, …)
+echo $result['elapsed_ms'];  // Time in milliseconds
 ```
 
-Then:
-
-```php
-$result = \Config\Services::brain()->ask('Show route dependencies for orders.');
-```
+---
 
 ## Web UI
 
-### Standalone chat page
+### Chat Page
 
-- URL: /brain
-- Route source: routes/ci4-brain.php
+Visit `/brain` for the full-page standalone chat interface.
 
-### Floating widget include
+### Floating Widget
 
-In your layout/view:
+Include in any CI3 view/layout:
 
 ```php
-<?php include ROOTPATH . 'vendor/inceptia-io/larabrain/resources/ci4-views/brain/widget.php'; ?>
+<?php include FCPATH . 'vendor/inceptia-io/larabrain/resources/ci3-views/brain/widget.php'; ?>
 ```
 
-Note: widget requests include CSRF token/hash helpers. Keep CSRF enabled in CI4.
+Or use the controller endpoint: `GET /brain/widget`
 
-## Context Data Notes
+---
 
-This CI branch expects indexed data in:
+## Configuration Reference
 
-- app_brain_entities
-- app_brain_relations
+All settings are read from environment variables in the constructor of `AppBrain`.
 
-Current branch focus is CI runtime. Automatic scanner CLI integration from Laravel is not used here.
+### Core
 
-## AI Drivers
+| Env Key | Default | Description |
+|---|---|---|
+| `BRAIN_ENABLED` | `true` | Enable / disable the package globally |
+| `BRAIN_AI_DRIVER` | `openai` | Active AI provider: `openai`, `gemini`, `anthropic`, `deepseek` |
 
-Built-in drivers:
+### Cache (requires CI3 cache driver)
 
-- openai
-- gemini
-- anthropic
-- deepseek
+| Env Key | Default | Description |
+|---|---|---|
+| `BRAIN_CACHE_ENABLED` | `false` | Enable CI3 cache for context results |
+| `BRAIN_CACHE_TTL` | `3600` | Default TTL in seconds |
+| `BRAIN_CACHE_CONTEXT_TTL` | `3600` | TTL for context query results |
+| `BRAIN_CACHE_PREFIX` | `brain` | Cache key prefix |
+| `BRAIN_ASK_CACHE_CONTEXT` | `false` | Cache context result per keyword |
 
-You can add custom drivers by extending:
+### Logging
 
-- Arafat\Brain\CI4\AI\AbstractCIProvider
+| Env Key | Default | Description |
+|---|---|---|
+| `BRAIN_LOG_LEVEL` | _(none)_ | CI3 log level for query logging (`debug`, `info`, `error`) |
+| `BRAIN_ASK_LOG_QUERIES` | `false` | Log every ask() call |
 
-and registering it in AppBrain config ($aiDrivers and $aiDefault).
+### OpenAI
 
-## Intent Detection
+| Env Key | Default |
+|---|---|
+| `OPENAI_API_KEY` | _(required)_ |
+| `BRAIN_OPENAI_MODEL` | `gpt-4o` |
+| `BRAIN_OPENAI_MAX_TOKENS` | `2048` |
+| `BRAIN_OPENAI_TIMEOUT` | `30` |
+| `BRAIN_OPENAI_BASE_URL` | `https://api.openai.com` |
 
-Intent map values:
+### Gemini
 
-- explain_workflow
-- show_routes
-- describe_model
-- list_dependencies
-- general
+| Env Key | Default |
+|---|---|
+| `GEMINI_API_KEY` | _(required)_ |
+| `BRAIN_GEMINI_MODEL` | `gemini-1.5-pro` |
+| `BRAIN_GEMINI_TIMEOUT` | `30` |
 
-Keywords are resolved by the shared intent map and used to bias prompt construction.
+### Anthropic
+
+| Env Key | Default |
+|---|---|
+| `ANTHROPIC_API_KEY` | _(required)_ |
+| `BRAIN_ANTHROPIC_MODEL` | `claude-3-5-sonnet-20241022` |
+| `BRAIN_ANTHROPIC_MAX_TOKENS` | `2048` |
+| `BRAIN_ANTHROPIC_TIMEOUT` | `30` |
+
+### DeepSeek
+
+| Env Key | Default |
+|---|---|
+| `DEEPSEEK_API_KEY` | _(required)_ |
+| `BRAIN_DEEPSEEK_MODEL` | `deepseek-chat` |
+| `BRAIN_DEEPSEEK_MAX_TOKENS` | `2048` |
+| `BRAIN_DEEPSEEK_TIMEOUT` | `30` |
+| `BRAIN_DEEPSEEK_BASE_URL` | `https://api.deepseek.com` |
+
+---
+
+## Context Data Tables
+
+### `app_brain_entities`
+
+| Column | Type | Description |
+|---|---|---|
+| `id` | int | Primary key |
+| `type` | enum | `model`, `table`, `route`, `controller_method` |
+| `key` | varchar | Machine-readable identifier |
+| `name` | varchar | Human-readable name |
+| `description` | text | What this entity does |
+| `metadata` | json | Extra data (fields, URI, HTTP method, etc.) |
+| `is_active` | tinyint | `1` = included in context queries |
+
+### `app_brain_relations`
+
+| Column | Type | Description |
+|---|---|---|
+| `id` | int | Primary key |
+| `source_entity_id` | int | FK → `app_brain_entities.id` |
+| `target_entity_id` | int | FK → `app_brain_entities.id` |
+| `relation_type` | varchar | `used_by`, `calls`, `called_by`, `has_many`, `belongs_to` |
+
+### Example Seed Data
+
+```sql
+INSERT INTO app_brain_entities (type, key, name, description, metadata, is_active)
+VALUES ('model', 'Product', 'Product Model',
+        'Manages product records.',
+        '{"table":"products","fillable":["name","price","category_id"]}', 1);
+
+INSERT INTO app_brain_entities (type, key, name, description, metadata, is_active)
+VALUES ('route', 'GET /products', 'List Products',
+        'Displays the product listing page.',
+        '{"method":"GET","uri":"/products","controller":"Products","action":"index"}', 1);
+```
+
+---
+
+## Custom Intent Keywords
+
+Extend the built-in intent vocabulary at runtime (e.g. in a CI3 hook):
+
+```php
+use Arafat\Brain\AI\IntentMap;
+use Arafat\Brain\AI\Intent;
+
+IntentMap::extend(Intent::ExplainWorkflow(), ['saga', 'pipeline', 'lifecycle']);
+IntentMap::extend(Intent::ShowRoutes(),      ['api docs', 'endpoints list']);
+```
+
+---
+
+## ask() Response Shape
+
+```php
+[
+    'query'      => 'How does the checkout flow work?',
+    'keyword'    => 'checkout',
+    'intent'     => 'explain_workflow',
+    'driver'     => 'openai',
+    'answer'     => '## Checkout Flow\n\n...',
+    'elapsed_ms' => 842.3,
+    'context'    => [
+        'keyword' => 'checkout',
+        'summary' => ['models' => 2, 'tables' => 1, 'routes' => 4, 'controller_methods' => 3],
+        'models'  => [...],
+        'routes'  => [...],
+        ...
+    ],
+]
+```
+
+---
+
+## File Structure
+
+```
+src/
+  AI/
+    Intent.php             # Value class (PHP 7.4+)
+    IntentMap.php          # Keyword → Intent mapping
+    PromptBuilder.php      # Builds the AI prompt
+  CI3/
+    AI/
+      AbstractCIProvider.php
+      Providers/
+        OpenAIProvider.php
+        GeminiProvider.php
+        AnthropicProvider.php
+        DeepSeekProvider.php
+    Config/
+      AppBrain.php         # Config class (reads from getenv())
+    Context/
+      CIContextBuilder.php # CI3 Query Builder — fetches context from DB
+      CIContextResult.php  # Immutable value object
+    Controllers/
+      BrainController.php  # Base controller (extend in application/controllers/)
+    Services/
+      BrainServices.php    # Singleton factory
+    AppBrainCI3Service.php # Main orchestration service
+  Exceptions/
+    AIException.php
+
+routes/
+  ci3-brain.php            # Drop-in route definitions
+
+resources/
+  ci3-views/brain/
+    chat.php               # Full-page chat UI
+    widget.php             # Floating widget partial
+
+database/schema/
+  codebrain.sql            # MySQL/MariaDB schema
+```
+
+---
 
 ## License
 
-MIT
+MIT © [Arafat Hossain](https://arafatdev.com)
