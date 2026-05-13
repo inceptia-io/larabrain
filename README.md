@@ -60,7 +60,15 @@ The package expects:
 - app_brain_entities
 - app_brain_relations
 
-Use your existing migration strategy in CI4 to create them.
+Use the bundled schema file:
+
+- vendor/inceptia-io/larabrain/database/schema/codebrain.sql
+
+Import it with your preferred SQL client, or with CLI:
+
+```bash
+mysql -u your_user -p your_database < vendor/inceptia-io/larabrain/database/schema/codebrain.sql
+```
 
 ### 4) Ask your first question
 
