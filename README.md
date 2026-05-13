@@ -15,9 +15,19 @@ It builds a context graph from your indexed application entities and uses AI to 
 
 ## Installation
 
+For the CodeIgniter 4 branch build, install from the `codebrain` branch:
+
 ```bash
-composer require inceptia-io/larabrain
+composer require inceptia-io/larabrain:dev-codebrain
 ```
+
+If Composer blocks dev constraints in your project, use:
+
+```bash
+composer require inceptia-io/larabrain:"dev-codebrain@dev"
+```
+
+> Note: `composer require inceptia-io/larabrain` installs the latest stable tag, not the CI branch build.
 
 ## Quick Start
 
